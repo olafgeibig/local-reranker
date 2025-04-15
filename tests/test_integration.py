@@ -7,12 +7,7 @@ import httpx
 # Default URL for the manually started server
 SERVER_URL = "http://127.0.0.1:8010"
 
-# Mark as integration test (optional, but good practice)
-# Use skipif to skip this test if the server isn't running or reachable
-@pytest.mark.skipif(
-    not pytest.config.getoption("--runintegration", default=False),
-    reason="Needs --runintegration option to run or server not reachable"
-)
+# Mark as integration test
 @pytest.mark.integration
 def test_rerank_integration():
     """Sends a request to the manually started server."""
