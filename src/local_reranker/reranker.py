@@ -96,11 +96,11 @@ class Reranker:
             logger.warning("No valid document pairs found after preparation.")
             return []
 
-        logger.info(f"Computing scores for {len(sentence_pairs)} query-document pairs...")
+        logger.debug(f"Computing scores for {len(sentence_pairs)} query-document pairs...")
         # The CrossEncoder model's predict method handles batching internally
         # It expects a list of [query, passage] pairs
         scores = self.model.predict(sentence_pairs, show_progress_bar=False) # Progress bar can be noisy
-        logger.info("Score computation finished.")
+        logger.debug("Score computation finished.")
 
         if len(scores) != len(original_indices):
              logger.error("Mismatch between number of scores and original indices. This shouldn't happen.")

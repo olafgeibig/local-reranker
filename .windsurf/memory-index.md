@@ -1,26 +1,23 @@
-# Memory Index
+# Windsurf Memory Index
 
-This file indexes all memory components and provides checksums for integrity verification.
+This index tracks all memory files within the `.windsurf/` directory.
 
-## Core Memory
+## Core Memory (`.windsurf/core/`)
+- `projectbrief.md`: Project overview and goals.
+- `productContext.md`: Product requirements and user needs.
+- `systemPatterns.md`: Architecture and design patterns.
+- `techContext.md`: Technology stack and dependencies.
+- `activeContext.md`: Current work focus and state.
+- `progress.md`: Implementation progress and roadmap.
 
-*   `core/projectbrief.md`: [checksum]
-*   `core/productContext.md`: [checksum]
-*   `core/systemPatterns.md`: [checksum]
-*   `core/techContext.md`: [checksum]
-*   `core/activeContext.md`: [checksum]
-*   `core/progress.md`: [checksum]
+## Plans (`.windsurf/plans/`)
+- `initial-project-plan.md`: Plan for project setup & core functionality.
 
-## Plans
+## Task Logs (`.windsurf/task-logs/`)
+- `task-log_YYYY-MM-DD-HH-MM_initialization.md`: Record of initial Memory Bank setup.
+- `task-log_2025-04-15-15-03_memory-updates.md`: Record of updating core context files (`activeContext`, `techContext`).
 
-*   [List plan files with checksums]
+## Errors (`.windsurf/errors/`)
+- (No errors logged yet)
 
-## Task Logs
-
-*   [List task logs with checksums]
-
-## Errors
-
-*   [List error logs with checksums]
-
-*Note: Checksums should be updated automatically by the system when files change.*
+*Note: Checksums for consistency verification are TBD.*

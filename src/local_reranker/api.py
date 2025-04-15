@@ -74,8 +74,9 @@ async def rerank_endpoint(
     """Handles reranking requests, compatible with Jina's /v1/rerank API."""
     start_time = time.time()
     request_id = str(uuid.uuid4())
-    logger.info(f"[{request_id}] Received rerank request.")
-
+    logger.debug(f"[{request_id}] Received rerank request.")
+    logger.info(f"[{request_id}] Reranking query: {request_body.query}")
+    # logger.info(f"[{request_id}] Reranking request: {request_body}")
     try:
         # Call the reranker's rerank method
         # 1. Compute scores
@@ -107,11 +108,16 @@ async def rerank_endpoint(
                     relevance_score=float(score) 
                 )
             )
-            
+        # Add top score and first few characters of top document to the log message
+        top_doc_preview = ""
+        if results and request_body.return_documents and results[0].document:
+            top_doc_preview = results[0].document.text[:50]
+        logger.info(f"[{request_id}] Reranking done, top score: {results[0].relevance_score}, preview: {top_doc_preview}")
+        # logger.info(f"results: {results}")
         response = RerankResponse(id=request_id, results=results)
         
         end_time = time.time()
-        logger.info(f"[{request_id}] Rerank request processed in {end_time - start_time:.4f} seconds.")
+        logger.debug(f"[{request_id}] Rerank request processed in {end_time - start_time:.4f} seconds.")
         return response
     except Exception as e:
         logger.error(f"[{request_id}] Error processing rerank request: {e}", exc_info=True)
