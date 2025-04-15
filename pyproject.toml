@@ -4,9 +4,9 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "local-reranker"
-version = "0.0.3" # Bump version due to dependency updates
+version = "0.1.1" # Bump version due to dependency updates
 authors = [
-  { name="Olaf Geibig", email="olaf.geibig@example.com" }, 
+  { name="Olaf Geibig", email="olaf@pobox.com" }, 
 ]
 description = "A lightweight, local reranker API implementation compatible with Jina."
 readme = "README.md"
@@ -44,8 +44,8 @@ dev = [
 ]
 
 [project.urls]
-"Homepage" = "https://github.com/user/local-reranker" 
-"Bug Tracker" = "https://github.com/user/local-reranker/issues" 
+"Homepage" = "https://github.com/olafgeibig/local-reranker" 
+"Bug Tracker" = "https://github.com/olafgeibig/local-reranker/issues" 
 
 [project.scripts]
-# Example: local-reranker-server = "local_reranker.cli:main"
+local-reranker = "local_reranker.api:run_server"

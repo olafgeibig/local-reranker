@@ -23,6 +23,14 @@ This project provides a FastAPI-based web service that implements a reranking AP
 
 ## Installation
 
+`uvx local-reranker [options]`
+
+*   `--host 0.0.0.0`: Makes the server accessible on your network. Default 127.0.0.1
+*   `--port 8010`: Specifies the port (adjust if needed). Defaul 8010
+*   `--reload`: Automatically restarts the server when code changes are detected (useful for development).
+
+## Development
+
 1.  **Clone the repository:**
     ```bash
     git clone <repository-url>
@@ -54,11 +62,11 @@ You can run the server using `uvicorn` directly or via `uv run`:
 
 ```bash
 # Ensure your virtual environment is active
-uvicorn local_reranker.api:app --host 0.0.0.0 --port 8000 --reload
+uvicorn local_reranker.api:app --host 0.0.0.0 --port 8010 --reload
 ```
 
 *   `--host 0.0.0.0`: Makes the server accessible on your network.
-*   `--port 8000`: Specifies the port (adjust if needed).
+*   `--port 8010`: Specifies the port (adjust if needed).
 *   `--reload`: Automatically restarts the server when code changes are detected (useful for development).
 
 **Method 2: Using `uv run` (handles environment implicitly)**
@@ -68,17 +76,17 @@ uvicorn local_reranker.api:app --host 0.0.0.0 --port 8000 --reload
 uv run uvicorn local_reranker.api:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-The server will start, and the first time it runs, it will download the default reranker model (`jina-reranker-v1-tiny-en`), which may take some time.
+The server will start, and the first time it runs, it will download the default reranker model (`jina-reranker-v2-base-multilingual`), which may take some time.
 
 ## Usage
 
 Once the server is running, you can send requests to the `/v1/rerank` endpoint. Here's an example using `curl`:
 
 ```bash
-curl -X POST "http://localhost:8000/v1/rerank" \
+curl -X POST "http://localhost:8010/v1/rerank" \
      -H "Content-Type: application/json" \
      -d '{
-           "model": "jina-reranker-v1-tiny-en", 
+           "model": "jina-reranker-v2-base-multilingual", 
            "query": "What are the benefits of using FastAPI?", 
            "documents": [
              "FastAPI is a modern, fast (high-performance) web framework for building APIs with Python 3.7+ based on standard Python type hints.",

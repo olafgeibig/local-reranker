@@ -7,6 +7,7 @@ import uuid
 from typing import List
 from contextlib import asynccontextmanager
 import torch
+import argparse
 
 from fastapi import FastAPI, HTTPException, Depends, Request 
 from .models import RerankRequest, RerankResponse, RerankResult, RerankDocument
@@ -52,7 +53,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="Local Reranker API",
     description="Provides a local implementation of reranker APIs (starting with Jina).",
-    version="0.0.1", 
+    version="0.1.0", 
     lifespan=lifespan 
 )
 
@@ -129,7 +130,29 @@ def health_check():
     return {"status": "ok"}
 
 # --- Main block for running with uvicorn directly ---
-# For production, use: uvicorn local_reranker.api:app --host 0.0.0.0 --port 8000
-if __name__ == "__main__":
+
+def run_server():
+    """Entry point for running the server via command line script."""
     import uvicorn
-    uvicorn.run("local_reranker.api:app", host="127.0.0.1", port=8000, reload=True)
+    parser = argparse.ArgumentParser(description="Run the Local Reranker API server.")
+    parser.add_argument("--host", type=str, default="0.0.0.0", help="Host to bind the server to.")
+    parser.add_argument("--port", type=int, default=8010, help="Port to bind the server to.")
+    parser.add_argument("--log-level", type=str, default="info", help="Uvicorn log level.")
+    # Add other arguments like --model-name, --device if desired
+
+    args = parser.parse_args()
+
+    # You can customize host, port, log_level etc. here, perhaps using environment variables
+    # For simplicity, using defaults that match common dev setups.
+    # uvicorn.run("local_reranker.api:app", host="0.0.0.0", port=8010, reload=False, log_level="info")
+    uvicorn.run(
+        "local_reranker.api:app", 
+        host=args.host, 
+        port=args.port, 
+        log_level=args.log_level,
+        reload=False # Typically False for production/installed script
+    )
+
+if __name__ == "__main__":
+    # This allows running the server directly using `python -m src.local_reranker.api`
+    run_server()
