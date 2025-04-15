@@ -31,8 +31,13 @@ class Reranker:
         logger.info(f"Initializing Reranker with model '{self.model_name}' on device '{self.device}'")
         
         try:
-            # Load the CrossEncoder model
-            self.model = CrossEncoder(self.model_name, device=self.device, max_length=512) # max_length default for many models
+            # Basic CrossEncoder initialization
+            logger.info(f"Attempting basic CrossEncoder initialization for '{self.model_name}'...")
+            self.model = CrossEncoder(
+                model_name_or_path=self.model_name, # Renamed argument
+                device=self.device, 
+                trust_remote_code=True # Add back based on ValueError
+            ) 
             logger.info(f"Successfully loaded model '{self.model_name}' to device '{self.device}'.")
         except Exception as e:
             logger.error(f"Failed to load model '{self.model_name}': {e}", exc_info=True)
