@@ -36,6 +36,7 @@ RUN uv venv && source .venv/bin/activate && uv pip install -e .
 ENV PATH="/app/.venv/bin:$PATH" \
     PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
+    RERANKER_BACKEND_TYPE=pytorch \
     RERANKER_HOST=0.0.0.0 \
     RERANKER_PORT=8010
 

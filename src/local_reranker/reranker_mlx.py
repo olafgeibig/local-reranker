@@ -8,7 +8,7 @@ from .reranker import Reranker as RerankerProtocol
 from .models import RerankRequest, RerankResult, RerankDocument
 from .batch_manager import BatchManager
 from .batch_processor import BatchProcessor, DocumentTextExtractor
-from .jina_mlx_reranker import JinaMLXReranker
+from .config import get_mlx_platform_error
 
 logger = logging.getLogger(__name__)
 
@@ -36,6 +36,14 @@ class Reranker(RerankerProtocol):
             ImportError: If MLX dependencies are not installed.
             RuntimeError: If model loading fails.
         """
+        platform_error = get_mlx_platform_error()
+        if platform_error is not None:
+            raise RuntimeError(
+                f"{platform_error} Use '--backend pytorch' or set "
+                "RERANKER_BACKEND_TYPE=pytorch. Install `local-reranker[mlx]` "
+                "only on macOS Apple Silicon."
+            )
+
         self.model_name = model_name
         self.device = device
 
@@ -48,9 +56,12 @@ class Reranker(RerankerProtocol):
             self.model = self._load_mlx_reranker(model_path)
             logger.info(f"Successfully loaded MLX reranker with batching: {model_name}")
 
-        except ImportError as e:
+        except (ImportError, OSError) as e:
             raise ImportError(
-                "MLX dependencies not found. Install with: pip install mlx mlx-lm safetensors"
+                "MLX backend requested, but the optional MLX dependencies could "
+                "not be imported. This is expected on Linux containers because "
+                "Apple's MLX runtime is unavailable there. Use '--backend pytorch' "
+                "or install `local-reranker[mlx]` on macOS Apple Silicon."
             ) from e
         except Exception as e:
             raise RuntimeError(f"Failed to load MLX model '{model_name}': {e}") from e
@@ -85,6 +96,16 @@ class Reranker(RerankerProtocol):
         Raises:
             RuntimeError: If model or projector loading fails.
         """
+        try:
+            from .jina_mlx_reranker import JinaMLXReranker
+        except (ImportError, OSError) as exc:
+            raise ImportError(
+                "MLX backend requested, but the MLX runtime could not be loaded. "
+                "On Docker/Linux this usually means the platform does not support "
+                "MLX shared libraries such as libmlx.so. Use '--backend pytorch' "
+                "or install `local-reranker[mlx]` on macOS Apple Silicon."
+            ) from exc
+
         projector_path = f"{model_path}/projector.safetensors"
 
         return JinaMLXReranker(

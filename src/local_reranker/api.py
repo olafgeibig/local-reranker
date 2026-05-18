@@ -11,8 +11,7 @@ from fastapi import FastAPI, HTTPException, Depends, Request
 from .models import RerankRequest, RerankResponse
 from .reranker import Reranker as RerankerProtocol
 from .reranker_pytorch import Reranker as PyTorchReranker
-from .reranker_mlx import Reranker as MLXReranker
-from .config import Settings, get_effective_model_name
+from .config import Settings, get_effective_model_name, validate_backend_type
 
 # --- Logging Setup ---
 logger = logging.getLogger(__name__)
@@ -34,12 +33,16 @@ async def lifespan(app: FastAPI):
         logger.info(f"Loading reranker type: {settings.backend_type}")
         logger.info(f"Loading model: {model_name}")
 
+        validate_backend_type(settings.backend_type)
+
         # Initialize reranker based on type
         if settings.backend_type == "pytorch":
             reranker_instance = PyTorchReranker(
                 model_name=model_name, disable_batching=settings.disable_batching
             )
         elif settings.backend_type == "mlx":
+            from .reranker_mlx import Reranker as MLXReranker
+
             reranker_instance = MLXReranker(
                 model_name=model_name, disable_batching=settings.disable_batching
             )

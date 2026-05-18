@@ -2,6 +2,7 @@
 """PyTorch implementation of the reranker protocol."""
 
 import logging
+import warnings
 from typing import List, Optional, Tuple, Union
 
 import torch
@@ -11,6 +12,9 @@ from .reranker import Reranker as RerankerProtocol
 from .models import RerankRequest, RerankResult, RerankDocument
 from .batch_manager import BatchManager
 from .batch_processor import BatchProcessor, DocumentTextExtractor
+
+# Suppress torch_dtype deprecation warning from Jina model files
+warnings.filterwarnings("ignore", message=".*torch_dtype.*is deprecated.*Use `dtype` instead")
 
 logger = logging.getLogger(__name__)
 
