@@ -7,7 +7,12 @@ import os
 import sys
 
 import uvicorn
-from .config import Settings, get_available_backends, get_effective_model_name
+from .config import (
+    Settings,
+    get_available_backends,
+    get_effective_model_name,
+    validate_backend_type,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -187,6 +192,11 @@ def main() -> None:
             reload=args.reload,
             disable_batching=args.disable_batching,
         )
+
+        try:
+            validate_backend_type(settings.backend_type)
+        except ValueError as exc:
+            parser.error(str(exc))
 
         logger.info(
             f"Starting Local Reranker API server on {settings.host}:{settings.port}"

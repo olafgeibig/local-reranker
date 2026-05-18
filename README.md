@@ -10,8 +10,8 @@ This project provides a FastAPI-based web service that implements a reranking AP
 
 *   **Jina Compatible API**: Implements `/v1/rerank` endpoint structure
 *   **Local Hosting**: Run reranker model entirely on your own infrastructure
-*   **Multiple Backends**: Supports both PyTorch and MLX backends for optimal performance
-*   **Apple Silicon Optimization**: MLX backend provides optimized performance for M1/M2/M3 chips
+*   **Multiple Backends**: Supports PyTorch everywhere and MLX on native Apple Silicon
+*   **Apple Silicon Optimization**: MLX backend is automatically installed on macOS arm64 (M1/M2/M3)
 *   **MLX Fallback Reranker**: Automatically wraps MLX-converted Hugging Face models that do not ship a `rerank.py` helper
 *   **Sentence Transformers**: Uses powerful `sentence-transformers` library for PyTorch backend
 *   **Configurable Model**: Easily switch between different reranker models and backends
@@ -29,10 +29,11 @@ This project provides a FastAPI-based web service that implements a reranking AP
 **PyTorch Backend:**
 *   PyTorch 2.5+ (automatically installed)
 *   CUDA/MPS support for GPU acceleration (optional)
+*   Recommended backend for Linux and Docker deployments
 
 **MLX Backend (Apple Silicon only):**
 *   Apple Silicon (M1/M2/M3) Mac
-*   MLX and MLX-LM libraries (automatically installed)
+*   MLX and MLX-LM are installed automatically on native macOS arm64
 *   Optimized for memory efficiency and performance on Apple chips
 
 ## Installation
@@ -49,6 +50,10 @@ source .venv/bin/activate
 # Install dependencies
 uv pip install -e ".[dev]"
 ```
+
+On native macOS Apple Silicon, MLX dependencies are installed automatically.
+
+On Linux, including Docker, the default backend is `pytorch`. MLX is not supported there because Docker containers run a Linux userspace/kernel interface even on Apple hosts, and MLX requires Apple-native runtime libraries.
 
 ## Usage
 
@@ -74,7 +79,16 @@ cli --backend <backend_type> --model <model> --host <host> --port <port>
 ### Available Backends
 
 *   `pytorch`: PyTorch-based reranker (default, cross-platform)
-*   `mlx`: MLX-based reranker (Apple Silicon optimized)
+*   `mlx`: MLX-based reranker (native macOS Apple Silicon only)
+
+### Backend Support By Platform
+
+| Platform | Default backend | MLX support |
+| --- | --- | --- |
+| Linux / Docker | `pytorch` | Not supported |
+| macOS Intel | `pytorch` | Not supported |
+| macOS Apple Silicon (native) | `pytorch` | Auto-installed and supported |
+| Docker Desktop on Apple Silicon | `pytorch` | Not supported (still Linux container runtime) |
 
 ### Command Options
 
@@ -97,6 +111,48 @@ cli serve --backend pytorch --model jinaai/jina-reranker-v2-base-multilingual
 
 ```bash
 cli serve --backend mlx --model jinaai/jina-reranker-v3-mlx
+```
+
+If you explicitly select `--backend mlx` on Linux or non-Apple hardware, startup fails fast with an actionable error telling you to switch back to `pytorch`.
+
+### Backend Selection Via Environment
+
+```bash
+# Default for Docker/Linux
+export RERANKER_BACKEND_TYPE=pytorch
+
+# Native macOS Apple Silicon (MLX auto-installed)
+export RERANKER_BACKEND_TYPE=mlx
+```
+
+Command-line flags still override the defaults:
+
+```bash
+cli serve --backend pytorch
+cli serve --backend mlx
+```
+
+### Docker
+
+Build and run the container with the default PyTorch backend:
+
+```bash
+docker build -t local-reranker .
+docker run --rm -p 8010:8010 \
+    -e RERANKER_BACKEND_TYPE=pytorch \
+    local-reranker
+```
+
+Minimal `docker compose` example:
+
+```yaml
+services:
+    local-reranker:
+        build: .
+        ports:
+            - "8010:8010"
+        environment:
+            RERANKER_BACKEND_TYPE: pytorch
 ```
 
 **Development Mode:**
@@ -211,8 +267,8 @@ uv run ruff check && uv run mypy src/
 # Ensure you're on Apple Silicon
 uname -m  # Should show arm64
 
-# Install MLX dependencies
-uv add mlx mlx-lm safetensors
+# Reinstall project dependencies (MLX auto-installs on native macOS arm64)
+uv pip install -e ".[dev]"
 ```
 
 **Model download fails:**
@@ -271,8 +327,8 @@ top -o mem | grep python
 The application uses pydantic-settings for configuration management. You can set the following environment variables to override defaults:
 
 ```bash
-# Force MLX backend
-export RERANKER_RERANKER_TYPE=mlx
+# Force backend selection
+export RERANKER_BACKEND_TYPE=mlx
 
 # Custom model name
 export RERANKER_MODEL_NAME=custom-mlx-model
@@ -289,6 +345,9 @@ export RERANKER_RELOAD=true
 ```
 
 **Note**: Using the CLI command line options is recommended over environment variables for clarity.
+
+On Linux containers, keep `RERANKER_BACKEND_TYPE=pytorch`. Selecting `mlx` there will fail because Docker/Linux cannot provide the Apple MLX shared libraries required by `mlx.core`.
+On Docker Desktop running on Apple Silicon, containers are still Linux runtime environments, so MLX is still unsupported there.
 
 ## Project Structure
 

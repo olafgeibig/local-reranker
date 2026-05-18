@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 """Configuration management for the local reranker service."""
 
+import platform
 from typing import Dict, Optional
+
 from pydantic_settings import BaseSettings
 
 
@@ -56,3 +58,40 @@ def get_available_backends() -> Dict[str, str]:
         # "onnx": "ONNX-based reranker for CPU optimization",
         # "tensorflow": "TensorFlow-based reranker",
     }
+
+
+def get_mlx_platform_error() -> Optional[str]:
+    """Return an actionable MLX platform error, if any."""
+    system = platform.system()
+    machine = platform.machine().lower()
+
+    if system != "Darwin":
+        return (
+            "MLX is only supported on macOS Apple Silicon. "
+            f"Detected {system} on {machine or 'unknown'}, and Linux containers "
+            "cannot load the Apple MLX runtime libraries."
+        )
+
+    if machine not in {"arm64", "aarch64"}:
+        return (
+            "MLX requires Apple Silicon arm64 hardware. "
+            f"Detected macOS on {machine or 'unknown'}."
+        )
+
+    return None
+
+
+def validate_backend_type(backend_type: str) -> None:
+    """Validate that the requested backend can run on this platform."""
+    if backend_type != "mlx":
+        return
+
+    platform_error = get_mlx_platform_error()
+    if platform_error is None:
+        return
+
+    raise ValueError(
+        f"{platform_error} Use '--backend pytorch' or set "
+        "RERANKER_BACKEND_TYPE=pytorch. Install the optional MLX extras only "
+        "on macOS Apple Silicon with `pip install 'local-reranker[mlx]'`."
+    )

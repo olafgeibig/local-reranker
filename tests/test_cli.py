@@ -213,6 +213,26 @@ class TestMainFunction:
         assert exc_info.value.code == 2  # argparse error code
         mock_run_server.assert_not_called()
 
+    @patch("local_reranker.cli.validate_backend_type")
+    @patch("local_reranker.cli.run_server")
+    @patch("sys.argv", ["local-reranker", "--backend", "mlx"])
+    def test_main_unsupported_mlx_backend(
+        self, mock_run_server, mock_validate_backend_type
+    ):
+        """Test main function with unsupported MLX backend."""
+        mock_validate_backend_type.side_effect = ValueError("MLX unavailable")
+
+        with pytest.raises(SystemExit) as exc_info:
+            main()
+
+        assert exc_info.value.code == 2
+        mock_run_server.assert_not_called()
+
+
+def test_package_import_keeps_mlx_lazy():
+    """Importing the package should not eagerly import MLX modules."""
+    assert "local_reranker.jina_mlx_reranker" not in sys.modules
+
 
 class TestArgumentParser:
     """Test cases for argument parsing logic."""
